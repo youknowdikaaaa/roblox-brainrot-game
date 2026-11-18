@@ -1,10 +1,10 @@
 -- init.server: boots Brainrot Bay. Order matters: the world first
 -- (it makes the wave wall the events need), then the services.
 
-local WorldBuilder = require(script.Parent.WorldBuilder)
-local Conveyor = require(script.Parent.Conveyor)
-local BrainrotService = require(script.Parent.BrainrotService)
-local EventService = require(script.Parent.EventService)
+local WorldBuilder = require(script.WorldBuilder)
+local Conveyor = require(script.Conveyor)
+local BrainrotService = require(script.BrainrotService)
+local EventService = require(script.EventService)
 
 local waveWall = WorldBuilder.buildAll()
 EventService.start(waveWall)
