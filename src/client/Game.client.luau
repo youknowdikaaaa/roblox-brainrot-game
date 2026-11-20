@@ -51,6 +51,19 @@ local function makeButton(parent, name, text, size, position)
 	return button
 end
 
+local function addCorners(instance, radius)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius or 8)
+	corner.Parent = instance
+end
+
+local function colorHex(color)
+	return string.format("#%02X%02X%02X",
+		math.floor(color.R * 255 + 0.5),
+		math.floor(color.G * 255 + 0.5),
+		math.floor(color.B * 255 + 0.5))
+end
+
 -- Cash and income, top centre (clear of the top-left Roblox buttons).
 local cashLabel = makeLabel(gui, "CashLabel", "Cash: $150",
 	UDim2.fromOffset(280, 44), UDim2.new(0.5, -140, 0, 12), 24,
@@ -58,24 +71,36 @@ local cashLabel = makeLabel(gui, "CashLabel", "Cash: $150",
 local incomeLabel = makeLabel(gui, "IncomeLabel", "Income: $0/s",
 	UDim2.fromOffset(280, 30), UDim2.new(0.5, -140, 0, 60), 18,
 	Color3.fromRGB(255, 230, 120))
+addCorners(cashLabel)
+addCorners(incomeLabel)
+
+-- Floating income popup: "+$X" rises off the cash label each tick.
+local popupLabel = makeLabel(gui, "IncomePopup", "",
+	UDim2.fromOffset(280, 28), UDim2.new(0.5, -140, 0, 94), 18,
+	Color3.fromRGB(120, 255, 120))
+popupLabel.Visible = false
+popupLabel.BackgroundTransparency = 1
 
 -- Event banner under the cash.
 local bannerLabel = makeLabel(gui, "EventBanner", "",
 	UDim2.fromOffset(460, 34), UDim2.new(0.5, -230, 0, 96), 20,
 	Color3.fromRGB(255, 120, 120))
 bannerLabel.Visible = false
+addCorners(bannerLabel)
 
 -- Feedback messages, centre screen.
 local messageLabel = makeLabel(gui, "MessageLabel", "",
 	UDim2.fromOffset(460, 36), UDim2.new(0.5, -230, 0.35, 0), 20,
 	Color3.fromRGB(255, 255, 255))
 messageLabel.Visible = false
+addCorners(messageLabel)
 
 -- Carrying indicator, under the message.
 local carryingLabel = makeLabel(gui, "CarryingLabel", "",
 	UDim2.fromOffset(460, 34), UDim2.new(0.5, -230, 0.35, 44), 20,
 	Color3.fromRGB(255, 170, 60))
 carryingLabel.Visible = false
+addCorners(carryingLabel)
 
 -- Next tier to save for, bottom left.
 local nextPanel = Instance.new("Frame")
@@ -86,21 +111,32 @@ nextPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 nextPanel.BackgroundTransparency = 0.25
 nextPanel.BorderSizePixel = 0
 nextPanel.Parent = gui
+addCorners(nextPanel)
+
+-- Rarity stripe across the top of the panel, coloured by the
+-- next tier's rarity so the goal reads at a glance.
+local rarityBar = Instance.new("Frame")
+rarityBar.Name = "RarityBar"
+rarityBar.Size = UDim2.new(1, 0, 0, 6)
+rarityBar.Position = UDim2.new(0, 0, 0, 0)
+rarityBar.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
+rarityBar.BorderSizePixel = 0
+rarityBar.Parent = nextPanel
 
 local nextTitle = makeLabel(nextPanel, "Title", "NEXT TIER",
-	UDim2.new(1, 0, 0, 24), UDim2.new(0, 0, 0, 0), 16,
+	UDim2.new(1, 0, 0, 24), UDim2.new(0, 0, 0, 6), 16,
 	Color3.fromRGB(255, 230, 120))
 nextTitle.BackgroundTransparency = 1
 local nextName = makeLabel(nextPanel, "Name", "—",
-	UDim2.new(1, -12, 0, 26), UDim2.new(0, 6, 0, 26), 20,
+	UDim2.new(1, -12, 0, 26), UDim2.new(0, 6, 0, 32), 20,
 	Color3.fromRGB(255, 255, 255))
 nextName.BackgroundTransparency = 1
 local nextDetail = makeLabel(nextPanel, "Detail", "—",
-	UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 54), 16,
+	UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 60), 16,
 	Color3.fromRGB(180, 220, 255))
 nextDetail.BackgroundTransparency = 1
 local nextBlurb = makeLabel(nextPanel, "Blurb", "—",
-	UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 80), 14,
+	UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 86), 14,
 	Color3.fromRGB(200, 200, 200))
 nextBlurb.BackgroundTransparency = 1
 
@@ -113,6 +149,7 @@ basePanel.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 basePanel.BackgroundTransparency = 0.25
 basePanel.BorderSizePixel = 0
 basePanel.Parent = gui
+addCorners(basePanel)
 
 local baseTitle = makeLabel(basePanel, "Title", "YOUR BASE",
 	UDim2.new(1, 0, 0, 24), UDim2.new(0, 0, 0, 0), 16,
@@ -130,6 +167,7 @@ baseList.Font = Enum.Font.SourceSans
 baseList.TextXAlignment = Enum.TextXAlignment.Left
 baseList.TextYAlignment = Enum.TextYAlignment.Top
 baseList.TextWrapped = true
+baseList.RichText = true
 baseList.Parent = basePanel
 
 -- Action buttons, right edge.
@@ -152,6 +190,7 @@ upgradePanel.BackgroundTransparency = 0.15
 upgradePanel.BorderSizePixel = 0
 upgradePanel.Visible = false
 upgradePanel.Parent = gui
+addCorners(upgradePanel)
 
 local upgradeTitle = makeLabel(upgradePanel, "Title", "UPGRADES",
 	UDim2.new(1, 0, 0, 26), UDim2.new(0, 0, 0, 0), 16,
@@ -184,6 +223,18 @@ end)
 
 local lastMessageId = 0
 local bannerUntil = 0
+local lastCash = nil
+local popupToken = 0
+
+-- One banner colour per event kind, so the warning reads at a glance.
+local BANNER_COLORS = {
+	wave = Color3.fromRGB(255, 120, 120),
+	golden = Color3.fromRGB(255, 220, 60),
+	surge = Color3.fromRGB(200, 120, 255),
+	rush = Color3.fromRGB(255, 150, 60),
+	lucky = Color3.fromRGB(255, 120, 220),
+	mythic = Color3.fromRGB(255, 215, 0),
+}
 
 local function showMessage(text)
 	messageLabel.Text = text
@@ -193,10 +244,40 @@ local function showMessage(text)
 	end)
 end
 
+-- A floating "+$X" that rises off the cash label when an income
+-- tick lands, then fades. A newer tick restarts it via the token.
+local function showIncomePopup(gain)
+	popupToken += 1
+	local token = popupToken
+	popupLabel.Text = "+" .. Catalog.formatMoney(gain)
+	popupLabel.TextTransparency = 0
+	popupLabel.Visible = true
+	popupLabel.Position = UDim2.new(0.5, -140, 0, 94)
+	task.spawn(function()
+		for step = 1, 18 do
+			if token ~= popupToken then
+				return
+			end
+			task.wait(0.05)
+			popupLabel.Position = UDim2.new(0.5, -140, 0, 94 - step * 1.7)
+			popupLabel.TextTransparency = step / 18
+		end
+		if token == popupToken then
+			popupLabel.Visible = false
+		end
+	end)
+end
+
 Remotes.StateSync.OnClientEvent:Connect(function(state)
 	cashLabel.Text = "Cash: " .. Catalog.formatMoney(state.cash)
 	incomeLabel.Text = "Income: " .. Catalog.formatMoney(state.incomePerSec) .. "/s"
 		.. (state.rebirths > 0 and ("  •  Rebirths: " .. state.rebirths) or "")
+		.. (state.combo and state.combo >= 2 and ("  •  COMBO x" .. state.combo) or "")
+
+	if lastCash ~= nil and state.cash > lastCash and state.incomePerSec > 0 then
+		showIncomePopup(state.cash - lastCash)
+	end
+	lastCash = state.cash
 
 	if state.messageId ~= lastMessageId then
 		lastMessageId = state.messageId
@@ -228,6 +309,7 @@ Remotes.StateSync.OnClientEvent:Connect(function(state)
 	if state.nextTier then
 		nextName.Text = state.nextTier.name
 		nextName.TextColor3 = Catalog.RARITY_COLORS[state.nextTier.rarity]
+		rarityBar.BackgroundColor3 = Catalog.RARITY_COLORS[state.nextTier.rarity]
 		nextDetail.Text = Catalog.RARITY_LABELS[state.nextTier.rarity]
 			.. "  •  " .. Catalog.formatMoney(state.nextTier.cost)
 			.. "  •  " .. Catalog.formatMoney(state.nextTier.rate) .. "/s"
@@ -236,6 +318,7 @@ Remotes.StateSync.OnClientEvent:Connect(function(state)
 		nextName.Text = "YOU OWN THEM ALL!"
 		nextDetail.Text = "Every brainrot is yours. Legend."
 		nextBlurb.Text = ""
+		rarityBar.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
 	end
 
 	if #state.owned == 0 then
@@ -243,7 +326,8 @@ Remotes.StateSync.OnClientEvent:Connect(function(state)
 	else
 		local lines = {}
 		for _, owned in ipairs(state.owned) do
-			local line = owned.name .. " — " .. Catalog.formatMoney(owned.rate) .. "/s"
+			local line = '<font color="' .. colorHex(Catalog.RARITY_COLORS[owned.rarity]) .. '">'
+				.. owned.name .. "</font> — " .. Catalog.formatMoney(owned.rate) .. "/s"
 			if owned.mutation ~= "Normal" then
 				line ..= " (" .. owned.mutation .. ")"
 			end
@@ -264,6 +348,7 @@ end)
 
 Remotes.EventAlert.OnClientEvent:Connect(function(event)
 	bannerLabel.Text = event.text
+	bannerLabel.TextColor3 = BANNER_COLORS[event.kind] or Color3.fromRGB(255, 120, 120)
 	bannerLabel.Visible = true
 	bannerUntil = os.clock() + (event.secondsLeft or 0) + 2
 	task.delay((event.secondsLeft or 0) + 2, function()

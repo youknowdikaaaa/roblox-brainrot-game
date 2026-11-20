@@ -67,6 +67,7 @@ function BrainrotService.syncPlayer(record)
 		},
 		lockRemaining = PlayerData.lockRemaining(record),
 		lockCooldownRemaining = PlayerData.lockCooldownRemaining(record),
+		combo = (os.clock() < record.comboUntil) and record.comboCount or 0,
 		owned = owned,
 		nextTier = nextTier and {
 			name = nextTier.name,
@@ -177,7 +178,23 @@ local function buyBrainrot(player, beltEntry)
 	record.cash -= entry.cost
 	Conveyor.remove(beltEntry)
 	placeOnBase(record, slotIndex, entry, beltEntry.mutation, beltEntry.multiplier)
-	BrainrotService.sendMessage(record, "Bought " .. entry.name .. " for " .. Catalog.formatMoney(entry.cost) .. "!")
+	-- Buy combo: buy again inside the window and the streak grows;
+	-- three in a row pays a cash bonus worth talking about.
+	local now = os.clock()
+	if now < record.comboUntil then
+		record.comboCount += 1
+	else
+		record.comboCount = 1
+	end
+	record.comboUntil = now + Config.COMBO_WINDOW_SECONDS
+	if record.comboCount >= Config.COMBO_MIN_COUNT then
+		local bonus = math.floor(entry.cost * Config.COMBO_BONUS_FRACTION)
+		record.cash += bonus
+		BrainrotService.sendMessage(record, "COMBO x" .. record.comboCount
+			.. "! +" .. Catalog.formatMoney(bonus) .. " bonus!")
+	else
+		BrainrotService.sendMessage(record, "Bought " .. entry.name .. " for " .. Catalog.formatMoney(entry.cost) .. "!")
+	end
 	BrainrotService.syncPlayer(record)
 end
 

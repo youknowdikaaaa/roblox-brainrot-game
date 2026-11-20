@@ -12,6 +12,8 @@
 --   lockUntil       os.clock() timestamp while the base lock holds
 --   lockCooldownUntil os.clock() timestamp while lock is recharging
 --   carrying        stolen brainrot record being carried, or nil
+--   comboCount      buys inside the current combo window
+--   comboUntil      os.clock() timestamp while the combo window holds
 
 local Players = game:GetService("Players")
 
@@ -33,6 +35,8 @@ function PlayerData.newRecord(player, plotIndex)
 		lockUntil = 0,
 		lockCooldownUntil = 0,
 		carrying = nil,
+		comboCount = 0,
+		comboUntil = 0,
 	}
 end
 

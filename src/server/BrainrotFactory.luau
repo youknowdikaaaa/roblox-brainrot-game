@@ -43,6 +43,38 @@ local function addAccessory(model, body, entry, scale)
 	end
 end
 
+-- Rarity glow: rarer brainrots wear a neon aura shell so they read
+-- from across the map; a mutation tints the aura its own colour, and
+-- gods and secrets also carry a real light. Cheap on purpose: one
+-- extra part per rare brainrot, one light only for the top tiers.
+local RARITY_GLOW = { Mythic = true, BrainrotGod = true, Secret = true }
+local MUTATION_GLOW_COLORS = {
+	Golden = Color3.fromRGB(255, 215, 0),
+	Diamond = Color3.fromRGB(120, 230, 255),
+	Rainbow = Color3.fromRGB(255, 120, 220),
+}
+
+local function addGlow(model, body, entry, mutationName)
+	local auraColor = MUTATION_GLOW_COLORS[mutationName]
+	if not auraColor and RARITY_GLOW[entry.rarity] then
+		auraColor = Catalog.RARITY_COLORS[entry.rarity]
+	end
+	if not auraColor then
+		return
+	end
+	local aura = makePart("Aura", body.Size + Vector3.new(0.5, 0.5, 0.5), auraColor, Enum.Material.Neon)
+	aura.Transparency = 0.75
+	aura.CFrame = body.CFrame
+	aura.Parent = model
+	if entry.rarity == "BrainrotGod" or entry.rarity == "Secret" then
+		local light = Instance.new("PointLight")
+		light.Color = auraColor
+		light.Range = 9
+		light.Brightness = 1
+		light.Parent = body
+	end
+end
+
 -- The floating label: name on top, rarity coloured, $/s underneath.
 local function addLabel(model, body, entry, rateText, mutationName)
 	local gui = Instance.new("BillboardGui")
@@ -123,6 +155,7 @@ function BrainrotFactory.build(entry, mutationName, multiplier)
 	pupilRight.Parent = model
 
 	addAccessory(model, body, entry, scale)
+	addGlow(model, body, entry, mutationName)
 	addLabel(model, body, entry, Catalog.formatMoney(rate), mutationName)
 
 	model.PrimaryPart = body

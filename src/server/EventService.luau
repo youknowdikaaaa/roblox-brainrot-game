@@ -1,7 +1,10 @@
--- EventService: the timed tension. Three events keep the map moving:
+-- EventService: the timed tension. Five events keep the map moving:
 -- the Slime Wave sweeps the map and punishes anyone caught outside
 -- their own base, Golden Hour doubles every brainrot's income for a
--- minute, and Mutation Surge makes the next spawns guaranteed Golden.
+-- minute, Mutation Surge makes the next spawns guaranteed Golden,
+-- Brainrot Rush doubles belt spawns and speed, and Lucky Mutation
+-- boosts mutation odds for a minute. Mythic-or-better spawns also
+-- get a server-wide announcement via the Conveyor's announce hook.
 -- It broadcasts every event to all clients so the HUD can warn the
 -- player, and it answers getIncomeMultiplier for the income tick.
 
@@ -9,6 +12,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local Catalog = require(ReplicatedStorage.Shared.BrainrotCatalog)
 local PlayerData = require(script.Parent.PlayerData)
 local Conveyor = require(script.Parent.Conveyor)
 
@@ -96,8 +100,29 @@ local function runSurge()
 	alert("surge", "MUTATION SURGE! The next 3 brainrots are guaranteed Golden!", 0)
 end
 
+local function runRush()
+	Conveyor.setRush(true)
+	alert("rush", "BRAINROT RUSH! Belt x2 speed, spawns twice as fast for 45s!", Config.RUSH_DURATION_SECONDS)
+	task.wait(Config.RUSH_DURATION_SECONDS)
+	Conveyor.setRush(false)
+	alert("rush", "Rush over. Belt back to normal speed.", 0)
+end
+
+local function runLucky()
+	Conveyor.setLucky(true)
+	alert("lucky", "LUCKY MUTATION! Mutation odds boosted for 60s — watch the belt!", Config.LUCKY_DURATION_SECONDS)
+	task.wait(Config.LUCKY_DURATION_SECONDS)
+	Conveyor.setLucky(false)
+	alert("lucky", "Lucky Mutation over. Odds back to normal.", 0)
+end
+
 function EventService.start(waveWall)
 	EventService._waveWall = waveWall
+	-- Mythic-or-better spawns are server news.
+	Conveyor.setAnnounceHandler(function(entry)
+		alert("mythic", "MYTHIC SPAWN! " .. entry.name
+			.. " (" .. Catalog.RARITY_LABELS[entry.rarity] .. ") is on the belt!", 0)
+	end)
 	task.spawn(function()
 		task.wait(Config.WAVE_FIRST_AFTER_SECONDS)
 		while true do
@@ -117,6 +142,20 @@ function EventService.start(waveWall)
 		while true do
 			runSurge()
 			task.wait(Config.SURGE_EVERY_SECONDS)
+		end
+	end)
+	task.spawn(function()
+		task.wait(Config.RUSH_FIRST_AFTER_SECONDS)
+		while true do
+			runRush()
+			task.wait(Config.RUSH_EVERY_SECONDS)
+		end
+	end)
+	task.spawn(function()
+		task.wait(Config.LUCKY_FIRST_AFTER_SECONDS)
+		while true do
+			runLucky()
+			task.wait(Config.LUCKY_EVERY_SECONDS)
 		end
 	end)
 end

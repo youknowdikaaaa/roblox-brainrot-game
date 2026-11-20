@@ -65,6 +65,26 @@ Config.SURGE_FIRST_AFTER_SECONDS = 120
 Config.SURGE_EVERY_SECONDS = 240
 Config.SURGE_GUARANTEED_MUTATIONS = 3
 
+-- Brainrot Rush: the belt speeds up and spawns twice as fast.
+Config.RUSH_FIRST_AFTER_SECONDS = 200
+Config.RUSH_EVERY_SECONDS = 360
+Config.RUSH_DURATION_SECONDS = 45
+Config.RUSH_SPAWN_DIVISOR = 2
+Config.RUSH_SPEED_MULTIPLIER = 1.5
+-- Lucky Mutation: mutation odds jump for a minute.
+Config.LUCKY_FIRST_AFTER_SECONDS = 300
+Config.LUCKY_EVERY_SECONDS = 420
+Config.LUCKY_DURATION_SECONDS = 60
+Config.LUCKY_MUTATION_CHANCES = {
+	{ name = "Rainbow", chance = 0.03, multiplier = 10 },
+	{ name = "Diamond", chance = 0.10, multiplier = 5 },
+	{ name = "Golden", chance = 0.25, multiplier = 3 },
+}
+-- Buy combo: buy several brainrots inside one window for a cash bonus.
+Config.COMBO_WINDOW_SECONDS = 20
+Config.COMBO_MIN_COUNT = 3
+Config.COMBO_BONUS_FRACTION = 0.10 -- +10% of the bought brainrot's cost
+
 -- Rebirths and upgrades
 Config.REBIRTH_BASE_COST = 100000
 Config.REBIRTH_INCOME_BONUS = 0.25 -- +25% income per rebirth, forever
